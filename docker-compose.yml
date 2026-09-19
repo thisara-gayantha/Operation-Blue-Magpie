@@ -86,6 +86,12 @@ services:
     image: ${CTFD_IMAGE}
     container_name: obm_ctfd
     restart: unless-stopped
+    # Apple Silicon (arm64) note: if the pinned CTFd image is amd64-only, set
+    # CTFD_PLATFORM=linux/amd64 in .env to run it under emulation on Docker
+    # Desktop. On the locked Ubuntu x86_64 host, leave CTFD_PLATFORM unset.
+    platform: ${CTFD_PLATFORM:-}
+    expose:
+      - "8000"          # gunicorn; reached by nginx over frontend_net, not published
     depends_on:
       ctfd_db:
         condition: service_healthy

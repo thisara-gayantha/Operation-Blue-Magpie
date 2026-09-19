@@ -102,9 +102,9 @@ for what is real.
 | Step | Item | Status |
 |---|---|---|
 | 1 | Repo scaffold | ✅ scaffold complete — `docker compose config` validates |
-| 2 | Base Docker networks | ⬜ not started |
-| 3 | CTFd + PostgreSQL + Redis | ⬜ not started |
-| 4 | Nginx reverse proxy + TLS | ⬜ not started |
+| 2 | Base Docker networks | ✅ defined — `docker compose config` validates |
+| 3 | CTFd + PostgreSQL + Redis | 🟡 defined (arch-portable); **host run pending** (Postgres first-run to verify) |
+| 4 | Nginx reverse proxy + TLS | 🟡 config + cert generator written (`gen_certs.sh` tested); **live TLS serve pending on host** |
 | 5 | S1–S3 + S5 static artefacts | ⬜ not started |
 | 6 | S4 web app + MySQL (SQLi) | ⬜ not started |
 | 7 | S6 Linux/SSH box (SUID) | ⬜ not started |
