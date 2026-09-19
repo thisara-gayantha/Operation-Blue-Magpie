@@ -14,12 +14,20 @@ platform/ctfd/logs/
 platform/ctfd/uploads/
 *.pid
 
+# --- Flags (lab secrets — never commit) ---
+challenges/.flags.json
+flags.local
+
 # --- Generated challenge artefacts (rebuilt by scripts; keep generators, not outputs) ---
 challenges/**/build/
 challenges/**/dist/
-challenges/s2/network_diagram.png
-challenges/s3/capture.pcap
 challenges/s1/lure.eml
+challenges/s2/network_diagram.png
+challenges/s2/network_diagram_cover.png
+challenges/s2/s2_payload.txt
+challenges/s3/capture.pcap
+challenges/s5/users_dump.txt
+challenges/s5/s5_wordlist.txt
 challenges/s5/*.dump
 challenges/s5/*.hashes
 
