@@ -1,0 +1,43 @@
+# --- Secrets & environment ---
+.env
+*.env
+!.env.example
+platform/nginx/certs/*.key
+platform/nginx/certs/*.crt
+platform/nginx/certs/*.pem
+secrets/
+
+# --- Docker / runtime data volumes ---
+data/
+*/data/
+platform/ctfd/logs/
+platform/ctfd/uploads/
+*.pid
+
+# --- Generated challenge artefacts (rebuilt by scripts; keep generators, not outputs) ---
+challenges/**/build/
+challenges/**/dist/
+challenges/s2/network_diagram.png
+challenges/s3/capture.pcap
+challenges/s1/lure.eml
+challenges/s5/*.dump
+challenges/s5/*.hashes
+
+# Keep .gitkeep placeholders even inside ignored dirs
+!**/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*~

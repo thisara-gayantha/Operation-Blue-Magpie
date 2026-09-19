@@ -1,0 +1,199 @@
+# =============================================================================
+# Operation Blue Magpie — Docker Compose (SKELETON)
+# Target host: Ubuntu 24.04 LTS, x86_64 · Docker Engine + Compose v2
+#
+# This is the Step-1 scaffold. The PLATFORM stack (nginx, ctfd, postgres, redis)
+# is defined and intended to run once .env is filled in (Steps 2–4). The
+# CHALLENGE services (S4 web+MySQL, S6 Linux/SSH) are left as commented stubs and
+# are implemented in Steps 6–7. Nothing here is verified until the README build
+# table marks the step ✅.
+#
+# The Compose `version:` key is intentionally omitted (obsolete in Compose v2).
+# =============================================================================
+
+name: obm
+
+# -----------------------------------------------------------------------------
+# Networks (Step 2)
+# -----------------------------------------------------------------------------
+networks:
+  # Public edge: only Nginx is published to the host; Nginx talks to CTFd here.
+  frontend_net:
+    name: obm_frontend_net
+    driver: bridge
+
+  # Platform internals: CTFd ↔ PostgreSQL ↔ Redis. `internal: true` removes the
+  # external route entirely — these containers have no path to the host or the
+  # internet.
+  backend_net:
+    name: obm_backend_net
+    driver: bridge
+    internal: true
+
+  # Challenge segment: S4 web app + S6 Linux box live here. Inter-container
+  # communication is disabled so the two challenge boxes are mutually isolated
+  # even on the same network. Internet egress is additionally blocked by
+  # firewall rules in scripts/ (Step 8) — kept as a normal (non-internal) bridge
+  # so participant-facing ports can still be published.
+  challenge_net:
+    name: obm_challenge_net
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "false"
+
+  # (Step 6) Private link between the S4 web app and its own MySQL, internal so
+  # the MySQL box is reachable by nothing but the S4 app.
+  # s4_db_net:
+  #   name: obm_s4_db_net
+  #   driver: bridge
+  #   internal: true
+
+# -----------------------------------------------------------------------------
+# Named volumes
+# -----------------------------------------------------------------------------
+volumes:
+  ctfd_pgdata:
+  ctfd_uploads:
+  ctfd_logs:
+  # s4_mysqldata:   # (Step 6)
+
+# -----------------------------------------------------------------------------
+# Services
+# -----------------------------------------------------------------------------
+services:
+
+  # --- Reverse proxy / TLS edge (Step 4) --------------------------------------
+  nginx:
+    image: ${NGINX_IMAGE}
+    container_name: obm_nginx
+    restart: unless-stopped
+    depends_on:
+      ctfd:
+        condition: service_started
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./platform/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./platform/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./platform/nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - frontend_net
+    # TLS config + self-signed cert generation land in Step 4.
+
+  # --- CTFd application (Step 3) ----------------------------------------------
+  ctfd:
+    image: ${CTFD_IMAGE}
+    container_name: obm_ctfd
+    restart: unless-stopped
+    depends_on:
+      ctfd_db:
+        condition: service_healthy
+      ctfd_cache:
+        condition: service_started
+    environment:
+      UPLOAD_FOLDER: /var/uploads
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      WORKERS: ${CTFD_WORKERS:-2}
+      LOG_FOLDER: /var/log/CTFd
+      REVERSE_PROXY: "true"
+    volumes:
+      - ctfd_uploads:/var/uploads
+      - ctfd_logs:/var/log/CTFd
+    networks:
+      - frontend_net   # reached by nginx
+      - backend_net    # reaches postgres + redis
+    # NOTE: CTFd ships officially with MariaDB; PostgreSQL is supported via
+    # DATABASE_URL but MUST be validated during Step-3 testing (migrations +
+    # first-run setup). Flagged in docs/build-notes.md.
+
+  # --- Platform database: PostgreSQL (Step 3) ---------------------------------
+  ctfd_db:
+    image: ${POSTGRES_IMAGE}
+    container_name: obm_ctfd_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ctfd_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend_net    # internal only — never published to host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Platform cache: Redis (Step 3) -----------------------------------------
+  ctfd_cache:
+    image: ${REDIS_IMAGE}
+    container_name: obm_ctfd_cache
+    restart: unless-stopped
+    networks:
+      - backend_net    # internal only
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  # ===========================================================================
+  # CHALLENGE SERVICES — stubs, implemented in Steps 6–7. Kept commented so the
+  # platform stack can be brought up and tested on its own first.
+  # ===========================================================================
+
+  # --- S4: vulnerable web app (SQL injection) (Step 6) ------------------------
+  # s4_web:
+  #   build: ./challenges/s4/app
+  #   container_name: obm_s4_web
+  #   restart: unless-stopped
+  #   depends_on:
+  #     s4_db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "${S4_HTTP_PORT:-8004}:80"
+  #   networks:
+  #     - challenge_net   # participant-facing
+  #     - s4_db_net       # private link to its MySQL
+  #   cap_drop: ["ALL"]
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   deploy:
+  #     resources:
+  #       limits: { cpus: "0.50", memory: 256M }
+
+  # --- S4: dedicated MySQL for the web app (Step 6) ---------------------------
+  # s4_db:
+  #   image: ${MYSQL_IMAGE}
+  #   container_name: obm_s4_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #   volumes:
+  #     - ./challenges/s4/seed:/docker-entrypoint-initdb.d:ro
+  #     - s4_mysqldata:/var/lib/mysql
+  #   networks:
+  #     - s4_db_net       # internal — reachable only by s4_web
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # --- S6: vulnerable Linux/SSH box (SUID misconfiguration) (Step 7) ----------
+  # s6_linux:
+  #   build: ./challenges/s6
+  #   container_name: obm_s6_linux
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${S6_SSH_PORT:-2226}:22"
+  #   networks:
+  #     - challenge_net   # participant-facing; ICC off isolates it from s4_web
+  #   # user-namespace remapping is configured at the Docker daemon level
+  #   # (/etc/docker/daemon.json) so container-root != host-root — see Step 7/8.
+  #   deploy:
+  #     resources:
+  #       limits: { cpus: "0.50", memory: 256M }
