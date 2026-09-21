@@ -106,7 +106,7 @@ for what is real.
 | 3 | CTFd + PostgreSQL + Redis | 🟡 defined (arch-portable); **host run pending** (Postgres first-run to verify) |
 | 4 | Nginx reverse proxy + TLS | 🟡 config + cert generator written (`gen_certs.sh` tested); **live TLS serve pending on host** |
 | 5 | S1–S3 + S5 static artefacts | ✅ generated + solve-verified (S1 base64, S2 OpenStego round-trip, S3 HTTP stream, S5 crack) |
-| 6 | S4 web app + MySQL (SQLi) | ⬜ not started |
+| 6 | S4 web app + MySQL (SQLi) | ✅ built + injection verified (manual UNION dump + sqlmap) — see build-notes for the mysql:8.0 re-check |
 | 7 | S6 Linux/SSH box (SUID) | ⬜ not started |
 | 8 | Isolation controls + verification | ⬜ not started |
 | 9 | Reset/recovery | ⬜ not started |

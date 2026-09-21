@@ -41,12 +41,12 @@ networks:
     driver_opts:
       com.docker.network.bridge.enable_icc: "false"
 
-  # (Step 6) Private link between the S4 web app and its own MySQL, internal so
-  # the MySQL box is reachable by nothing but the S4 app.
-  # s4_db_net:
-  #   name: obm_s4_db_net
-  #   driver: bridge
-  #   internal: true
+  # Private link between the S4 web app and its own MySQL, internal so the MySQL
+  # box is reachable by nothing but the S4 app (Step 6).
+  s4_db_net:
+    name: obm_s4_db_net
+    driver: bridge
+    internal: true
 
 # -----------------------------------------------------------------------------
 # Named volumes
@@ -55,7 +55,7 @@ volumes:
   ctfd_pgdata:
   ctfd_uploads:
   ctfd_logs:
-  # s4_mysqldata:   # (Step 6)
+  s4_mysqldata:
 
 # -----------------------------------------------------------------------------
 # Services
@@ -144,50 +144,56 @@ services:
     command: ["redis-server", "--save", "", "--appendonly", "no"]
 
   # ===========================================================================
-  # CHALLENGE SERVICES — stubs, implemented in Steps 6–7. Kept commented so the
-  # platform stack can be brought up and tested on its own first.
+  # CHALLENGE SERVICES
   # ===========================================================================
 
   # --- S4: vulnerable web app (SQL injection) (Step 6) ------------------------
-  # s4_web:
-  #   build: ./challenges/s4/app
-  #   container_name: obm_s4_web
-  #   restart: unless-stopped
-  #   depends_on:
-  #     s4_db:
-  #       condition: service_healthy
-  #   ports:
-  #     - "${S4_HTTP_PORT:-8004}:80"
-  #   networks:
-  #     - challenge_net   # participant-facing
-  #     - s4_db_net       # private link to its MySQL
-  #   cap_drop: ["ALL"]
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   deploy:
-  #     resources:
-  #       limits: { cpus: "0.50", memory: 256M }
+  s4_web:
+    build: ./challenges/s4/app
+    image: obm/s4-web
+    container_name: obm_s4_web
+    restart: unless-stopped
+    depends_on:
+      s4_db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: s4_db
+      MYSQL_PORT: "3306"
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${S4_HTTP_PORT:-8004}:8080"   # participant-facing (app listens on 8080)
+    networks:
+      - challenge_net   # participant-facing; ICC off isolates it from s6_linux
+      - s4_db_net       # private link to its MySQL
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits: { cpus: "0.50", memory: 256M }
 
   # --- S4: dedicated MySQL for the web app (Step 6) ---------------------------
-  # s4_db:
-  #   image: ${MYSQL_IMAGE}
-  #   container_name: obm_s4_db
-  #   restart: unless-stopped
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
-  #     MYSQL_USER: ${MYSQL_USER}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #   volumes:
-  #     - ./challenges/s4/seed:/docker-entrypoint-initdb.d:ro
-  #     - s4_mysqldata:/var/lib/mysql
-  #   networks:
-  #     - s4_db_net       # internal — reachable only by s4_web
-  #   healthcheck:
-  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  s4_db:
+    image: ${MYSQL_IMAGE}
+    container_name: obm_s4_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./challenges/s4/seed:/docker-entrypoint-initdb.d:ro
+      - s4_mysqldata:/var/lib/mysql
+    networks:
+      - s4_db_net       # internal — reachable only by s4_web
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # --- S6: vulnerable Linux/SSH box (SUID misconfiguration) (Step 7) ----------
   # s6_linux:

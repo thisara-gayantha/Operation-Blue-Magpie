@@ -28,7 +28,18 @@ might be infeasible (per Section 7: flag, don't silently work around).
    check must be re-run after any restart. — **pending**
 
 ## Decisions log
-- (add dated entries as implementation proceeds)
+- 2026-09-21 — **S4 built + verified.** Flask app with an intentional UNION-based
+  SQL injection in `POST /api/v1/login` (username param, 3 columns). Verified by
+  standing up a real MySQL-compatible DB, loading the generated seed, and
+  exploiting it: auth bypass, full `users` dump (matches the S5 hand-off exactly),
+  and flag read from `secrets`. sqlmap also confirmed the injection and dumped the
+  flag. Note: local verification used MariaDB 10.11 (MySQL-compatible fork); the
+  container image is `mysql:8.0` per the locked design — the query/technique is
+  identical on both, but re-run the sqlmap check once on the real `mysql:8.0`
+  container. App runs unprivileged on port 8080 with `cap_drop=ALL` +
+  `no-new-privileges`; `s4_db` is on an internal `s4_db_net` reachable only by the app.
+- App/base image versions (`Flask 3.0.3`, `PyMySQL 1.1.1`, `gunicorn 22.0.0`,
+  `python:3.12-slim`) resolve via pip here, but re-confirm on the build host.
 
 ## Test results
 - See `docs/test-results.md` (created in Step 10; empty until real runs exist).
