@@ -17,6 +17,7 @@ platform/ctfd/uploads/
 # --- Flags (lab secrets — never commit) ---
 challenges/.flags.json
 flags.local
+docs/flags.hashed.txt
 
 # --- Generated challenge artefacts (rebuilt by scripts; keep generators, not outputs) ---
 challenges/**/build/
