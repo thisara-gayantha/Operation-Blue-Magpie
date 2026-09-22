@@ -109,8 +109,8 @@ for what is real.
 | 6 | S4 web app + MySQL (SQLi) | ✅ built + injection verified (manual UNION dump + sqlmap) — see build-notes for the mysql:8.0 re-check |
 | 7 | S6 Linux/SSH box (SUID) | 🟡 built; SUID escalation verified on Ubuntu 24.04 — `docker compose build s6_linux` pending on Docker host |
 | 8 | Isolation controls + verification | 🟡 firewall + userns config + `isolation_check.sh` written (shellcheck clean); apply/verify on the Ubuntu VM |
-| 9 | Reset/recovery | ⬜ not started |
-| 10 | Full test matrix | ⬜ not started |
+| 9 | Reset/recovery | 🟡 `reset.sh` written (shellcheck clean); confirm clean-state on host |
+| 10 | Full test matrix | 🟡 `run_tests.sh` written (shellcheck clean) → writes `docs/test-results.md`; run on host |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ built **and** verified on the target host.
 
