@@ -40,6 +40,18 @@ might be infeasible (per Section 7: flag, don't silently work around).
   `no-new-privileges`; `s4_db` is on an internal `s4_db_net` reachable only by the app.
 - App/base image versions (`Flask 3.0.3`, `PyMySQL 1.1.1`, `gunicorn 22.0.0`,
   `python:3.12-slim`) resolve via pip here, but re-confirm on the build host.
+- 2026-09-22 — **S6 built + escalation verified.** `ubuntu:24.04` box with sshd,
+  the `svc-deploy` account (S5 hand-off), and a deliberate SUID-root `find`. The
+  escalation technique was verified on an Ubuntu 24.04 host: an unprivileged user
+  is denied direct read of the root-only `/root/flag.txt`, but SUID `find` →
+  `/bin/sh -p` yields euid 0 and reads the flag. The **container image build**
+  (`docker compose build s6_linux`) still has to be run on the Docker host — no
+  Docker in the authoring sandbox. `no-new-privileges` is deliberately NOT set on
+  s6 (it would break the SUID escalation).
+- **Host plan (agreed):** develop on the Mac (Docker Desktop, arm64); run the
+  final graded isolation checks + full end-to-end matrix on an Ubuntu 24.04
+  x86_64 VM (UTM), where `userns-remap` and host firewall egress rules behave as
+  the report locks them.
 
 ## Test results
 - See `docs/test-results.md` (created in Step 10; empty until real runs exist).

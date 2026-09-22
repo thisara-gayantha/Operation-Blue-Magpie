@@ -31,6 +31,8 @@ challenges/s5/s5_wordlist.txt
 challenges/s5/*.dump
 challenges/s5/*.hashes
 challenges/s4/seed/init.sql
+challenges/s6/build/flag.txt
+challenges/s6/build/svc_pass.txt
 
 # Keep .gitkeep placeholders even inside ignored dirs
 !**/.gitkeep

@@ -298,12 +298,25 @@ def build_s2(flags: dict) -> None:
           f"(embed into final {NEXT_FILE} with scripts/embed_s2.sh)")
 
 
+# ============================================================================
+# S6 — Total Compromise  (root flag + SSH credential for the container build)
+# ============================================================================
+def build_s6(flags: dict) -> None:
+    s6build = REPO / "challenges" / "s6" / "build"
+    s6build.mkdir(parents=True, exist_ok=True)
+    # Consumed by challenges/s6/Dockerfile at build time (both git-ignored).
+    (s6build / "flag.txt").write_text(flags["S6"] + "\n")        # -> /root/flag.txt
+    (s6build / "svc_pass.txt").write_text(S6_SSH_PASS + "\n")    # svc-deploy password
+    print("[S6] challenges/s6/build/flag.txt + svc_pass.txt")
+
+
 def main() -> None:
     flags, tokens = load_flags()
     build_s1(flags)
     build_s3(flags)
     build_s5(flags, tokens)
     build_s4_seed(flags, tokens)
+    build_s6(flags)
     build_s2(flags)
     print("\nDone. Next: run scripts/embed_s2.sh to produce the final network_diagram.png")
 

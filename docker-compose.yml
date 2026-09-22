@@ -196,16 +196,19 @@ services:
       retries: 10
 
   # --- S6: vulnerable Linux/SSH box (SUID misconfiguration) (Step 7) ----------
-  # s6_linux:
-  #   build: ./challenges/s6
-  #   container_name: obm_s6_linux
-  #   restart: unless-stopped
-  #   ports:
-  #     - "${S6_SSH_PORT:-2226}:22"
-  #   networks:
-  #     - challenge_net   # participant-facing; ICC off isolates it from s4_web
-  #   # user-namespace remapping is configured at the Docker daemon level
-  #   # (/etc/docker/daemon.json) so container-root != host-root — see Step 7/8.
-  #   deploy:
-  #     resources:
-  #       limits: { cpus: "0.50", memory: 256M }
+  s6_linux:
+    build: ./challenges/s6
+    image: obm/s6-linux
+    container_name: obm_s6_linux
+    restart: unless-stopped
+    ports:
+      - "${S6_SSH_PORT:-2226}:22"
+    networks:
+      - challenge_net   # participant-facing; ICC off isolates it from s4_web
+    # NO `no-new-privileges` here — it would disable the SUID escalation that IS
+    # the challenge. Isolation for S6 is user-namespace remapping at the daemon
+    # level (/etc/docker/daemon.json -> "userns-remap") so container-root !=
+    # host-root, plus challenge_net + resource limits (Step 8 verifies these).
+    deploy:
+      resources:
+        limits: { cpus: "0.50", memory: 256M }
