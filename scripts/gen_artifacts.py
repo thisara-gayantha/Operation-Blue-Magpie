@@ -138,20 +138,23 @@ def build_s3(flags: dict) -> None:
         f"\r\n{resp_json}"
     )
 
-    eth = Ether()
+    # Fixed lab MAC addresses so scapy never probes the network to resolve them
+    # (avoids the getmacbyip / /dev/bpf warnings and keeps generation offline).
+    c2s = Ether(src="02:42:0a:0a:0e:07", dst="02:42:ac:14:00:0a")  # client -> server
+    s2c = Ether(src="02:42:ac:14:00:0a", dst="02:42:0a:0a:0e:07")  # server -> client
     isn_c, isn_s = 1000, 5000
     pkts = []
     # 3-way handshake
-    pkts.append(eth/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="S", seq=isn_c))
-    pkts.append(eth/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="SA", seq=isn_s, ack=isn_c+1))
-    pkts.append(eth/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="A", seq=isn_c+1, ack=isn_s+1))
+    pkts.append(c2s/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="S", seq=isn_c))
+    pkts.append(s2c/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="SA", seq=isn_s, ack=isn_c+1))
+    pkts.append(c2s/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="A", seq=isn_c+1, ack=isn_s+1))
     # request
-    pkts.append(eth/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="PA", seq=isn_c+1, ack=isn_s+1)/Raw(load=http_req.encode()))
+    pkts.append(c2s/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="PA", seq=isn_c+1, ack=isn_s+1)/Raw(load=http_req.encode()))
     ack_after_req = isn_c + 1 + len(http_req)
-    pkts.append(eth/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="A", seq=isn_s+1, ack=ack_after_req))
+    pkts.append(s2c/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="A", seq=isn_s+1, ack=ack_after_req))
     # response
-    pkts.append(eth/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="PA", seq=isn_s+1, ack=ack_after_req)/Raw(load=http_resp.encode()))
-    pkts.append(eth/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="A", seq=ack_after_req, ack=isn_s+1+len(http_resp)))
+    pkts.append(s2c/IP(src=server_ip, dst=client_ip)/TCP(sport=sport, dport=cport, flags="PA", seq=isn_s+1, ack=ack_after_req)/Raw(load=http_resp.encode()))
+    pkts.append(c2s/IP(src=client_ip, dst=server_ip)/TCP(sport=cport, dport=sport, flags="A", seq=ack_after_req, ack=isn_s+1+len(http_resp)))
 
     out = REPO / "challenges" / "s3" / "capture.pcap"
     wrpcap(str(out), pkts)
