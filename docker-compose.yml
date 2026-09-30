@@ -83,6 +83,9 @@ services:
 
   # --- CTFd application (Step 3) ----------------------------------------------
   ctfd:
+    build:
+      context: ./platform/ctfd
+      dockerfile: Dockerfile
     image: ${CTFD_IMAGE}
     container_name: obm_ctfd
     restart: unless-stopped

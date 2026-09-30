@@ -18,6 +18,8 @@ platform/ctfd/uploads/
 challenges/.flags.json
 flags.local
 docs/flags.hashed.txt
+docs/personal-solve-guide.html
+docs/personal-solve-guide.pdf
 
 # --- Generated challenge artefacts (rebuilt by scripts; keep generators, not outputs) ---
 challenges/**/build/
