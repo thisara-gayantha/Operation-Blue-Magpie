@@ -2,6 +2,10 @@
 
 IE3132 Penetration Testing · SLIIT · Assignment 01 (Implementation)
 
+> **Running it?** Windows + Docker Desktop → [`docs/SETUP-WINDOWS.md`](docs/SETUP-WINDOWS.md)
+> (turnkey). The six challenges (with their files attached) are loaded by
+> `scripts/seed_ctfd.py`, and the futuristic theme is `platform/ctfd/theme-custom.css`.
+
 An **isolated, self-contained** Capture-The-Flag lab built on Docker Compose.
 It reproduces a fictional intrusion against **CeylonPay** (a made-up Sri Lankan
 digital payment processor) across six chained stages, for an *authorised

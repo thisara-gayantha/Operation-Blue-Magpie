@@ -35,14 +35,20 @@ LOGIN_PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CeylonPay — Staging Portal</title>
 <style>
- :root{color-scheme:light dark}
- body{font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:420px;margin:6vh auto;padding:0 16px}
- h1{font-size:1.3rem} .card{border:1px solid #8884;border-radius:12px;padding:20px}
- label{display:block;margin:.6rem 0 .2rem;font-size:.9rem}
- input{width:100%;padding:.55rem;border:1px solid #8886;border-radius:8px;box-sizing:border-box}
- button{margin-top:1rem;width:100%;padding:.6rem;border:0;border-radius:8px;background:#2b6cb0;color:#fff;font-weight:600}
- pre{white-space:pre-wrap;word-break:break-word;background:#8881;padding:12px;border-radius:8px}
- .note{color:#c33;font-size:.8rem;margin-top:1rem}
+ :root{color-scheme:dark;--bg:#0a0d13;--surface:#10151f;--surface-2:#151b27;--border:#26303f;--border-2:#38455c;--text:#e8eef7;--muted:#94a2b8;--faint:#63718a;--accent:#4c9aff;--accent-soft:rgba(76,154,255,.14)}
+ *{box-sizing:border-box}
+ body{font-family:Inter,system-ui,sans-serif;color:var(--text);max-width:452px;min-height:100vh;margin:0 auto;padding:clamp(18px,5vw,32px);display:flex;flex-direction:column;justify-content:center;background:radial-gradient(900px 420px at 50% -8%,rgba(76,154,255,.08),transparent 60%),linear-gradient(rgba(76,154,255,.028) 1px,transparent 1px) 0 0/46px 46px,linear-gradient(90deg,rgba(76,154,255,.028) 1px,transparent 1px) 0 0/46px 46px,var(--bg)}
+ h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.4rem;color:#fff;overflow-wrap:anywhere}
+ .card{min-width:0;border:1px solid var(--border);border-radius:8px;padding:clamp(16px,5vw,24px);background:var(--surface);box-shadow:0 12px 34px rgba(0,0,0,.3)}
+ label{display:block;margin:.8rem 0 .3rem;color:var(--muted);font-size:.9rem}
+ input{display:block;width:100%;min-width:0;padding:.7rem .75rem;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);font:inherit}
+ input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+ button{margin-top:1rem;width:100%;min-height:44px;padding:.7rem;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:#04121f;font:600 1rem 'Space Grotesk',system-ui,sans-serif;cursor:pointer}
+ button:hover{filter:brightness(1.08)}
+ pre{max-width:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface-2);border:1px solid var(--border);padding:12px;border-radius:8px;color:var(--text)}
+ .note{color:#ff7b88;font-size:.8rem;margin-top:1rem}
+ @media(max-width:360px){body{padding:16px}h1{font-size:1.2rem}}
+ @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
 </style></head>
 <body>
  <h1>CeylonPay <span style="opacity:.6">· staging</span></h1>
