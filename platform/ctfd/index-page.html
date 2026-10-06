@@ -1,0 +1,37 @@
+<!-- Operation Blue Magpie — CTFd home page content.
+     Paste into Admin -> Pages -> (index) with format = HTML, or let the seeder set it. -->
+<section class="obm-home" aria-labelledby="obm-title">
+
+  <header class="obm-hero">
+    <svg class="obm-mark" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="3" y="3" width="42" height="42" rx="12" fill="none" stroke="#38455c"/>
+      <path d="M24 9 L35 20 L27 21 L33 33 L24 27 L15 33 L21 21 L13 20 Z" fill="#4c9aff"/>
+      <circle cx="24" cy="20" r="1.8" fill="#0a0d13"/>
+    </svg>
+    <div class="obm-eyebrow">Authorised Assessment Range</div>
+    <h1 class="obm-title" id="obm-title">Operation Blue Magpie</h1>
+    <p class="obm-intro">
+      <strong style="color:#e8eef7">CeylonPay</strong>, a Sri Lankan digital payment processor, has been breached.
+      Reproduce the intrusion across six chained stages — forensics, networking, web, cryptography and
+      system compromise — on an isolated staging replica.
+    </p>
+    <nav class="obm-actions" aria-label="Operation links">
+      <a href="/challenges" class="btn btn-primary">Enter the operation</a>
+      <a href="/scoreboard" class="btn btn-secondary">Scoreboard</a>
+    </nav>
+  </header>
+
+  <div class="obm-stages" aria-label="Challenge stages">
+    <!-- stage strip -->
+    <article class="obm-stage"><div class="obm-stage-code">S1</div><div class="obm-stage-name">The Phishing Lure</div><div class="obm-stage-domain">Digital Forensics</div></article>
+    <article class="obm-stage"><div class="obm-stage-code">S2</div><div class="obm-stage-name">The Leaked Blueprint</div><div class="obm-stage-domain">Steganography</div></article>
+    <article class="obm-stage"><div class="obm-stage-code">S3</div><div class="obm-stage-name">Traffic Reconstruction</div><div class="obm-stage-domain">Networking</div></article>
+    <article class="obm-stage"><div class="obm-stage-code">S4</div><div class="obm-stage-name">The Foothold</div><div class="obm-stage-domain">Web Security</div></article>
+    <article class="obm-stage"><div class="obm-stage-code">S5</div><div class="obm-stage-name">Cracking the Vault</div><div class="obm-stage-domain">Cryptography</div></article>
+    <article class="obm-stage"><div class="obm-stage-code">S6</div><div class="obm-stage-name">Total Compromise</div><div class="obm-stage-domain">Linux / System</div></article>
+  </div>
+
+  <p class="obm-safety">
+    Every target, credential and flag exists only inside this isolated lab. IE3132 Penetration Testing · SLIIT
+  </p>
+</section>

@@ -1,0 +1,4 @@
+{
+  "comment": "Operation Blue Magpie — Docker daemon config for the Ubuntu x86_64 verify VM. Copy the relevant keys into /etc/docker/daemon.json and restart Docker (sudo systemctl restart docker). userns-remap makes container-root != host-root so a root shell inside S6 cannot map to real host root.",
+  "userns-remap": "default"
+}

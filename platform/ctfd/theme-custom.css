@@ -1,0 +1,224 @@
+/* ============================================================================
+   Operation Blue Magpie — CTFd theme (Custom CSS for the core-beta theme, CTFd 3.8.x)
+   Paste into: Admin -> Config -> Theme -> Custom CSS  (the seeder does this for you).
+   Targets CTFd's REAL markup (Bootstrap 5 + core-beta): main[role=main], the
+   .navbar.bg-dark.fixed-top, .challenge-button.btn-dark, .challenge-solved,
+   .category-header, the login column, tables. CSS only — no JS.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#0a0d13; --surface:#10151f; --surface-2:#151b27; --surface-3:#1b2331;
+  --border:#26303f; --border-2:#38455c;
+  --text:#e8eef7; --muted:#94a2b8; --faint:#63718a;
+  --accent:#4c9aff; --accent-soft:rgba(76,154,255,.14);
+  --cyan:#3ac6d8; --ok:#34d6a2; --ok-soft:rgba(52,214,162,.12);
+  --crit:#ff5c6c; --warn:#f5b544;
+  --f-display:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* align Bootstrap 5 tokens */
+  --bs-body-bg:var(--bg); --bs-body-color:var(--text); --bs-border-color:var(--border);
+  --bs-primary:var(--accent); --bs-body-font-family:var(--f-body); --bs-link-color:var(--accent);
+}
+
+/* ---- base + backdrop grid ---- */
+html,body{background:var(--bg) !important;color:var(--text) !important;font-family:var(--f-body) !important;}
+body{background:
+  radial-gradient(1100px 540px at 50% -10%, rgba(76,154,255,.07), transparent 60%),
+  linear-gradient(rgba(76,154,255,.028) 1px, transparent 1px) 0 0/46px 46px,
+  linear-gradient(90deg, rgba(76,154,255,.028) 1px, transparent 1px) 0 0/46px 46px,
+  var(--bg) !important;}
+main[role="main"], main{background:transparent !important;}
+h1,h2,h3,h4,.h1,.h2,.h3{font-family:var(--f-display) !important;letter-spacing:0;color:#fff !important;}
+a{color:var(--accent) !important;text-decoration:none;}
+a:hover{filter:brightness(1.15);}
+.text-muted,small,.small{color:var(--muted) !important;}
+code,kbd,pre,.font-monospace{font-family:var(--f-mono) !important;}
+hr{border-color:var(--border) !important;opacity:1;}
+
+/* ---- navbar (bg-dark fixed-top) ---- */
+.navbar.bg-dark, .navbar.navbar-dark, .bg-dark{
+  background:rgba(10,13,19,.92) !important; backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border) !important;
+}
+.navbar-dark .navbar-brand, .navbar-brand{
+  color:#fff !important; font-family:var(--f-display) !important; font-weight:700 !important; letter-spacing:0;
+  display:inline-flex; align-items:center;
+}
+.navbar-brand::before{
+  content:""; width:22px; height:22px; margin-right:10px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l7 7-4.6.6L18 18l-6-3.6L6 18l3.6-8.4L5 9z' fill='%234c9aff'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.navbar-dark .navbar-nav .nav-link{color:var(--muted) !important;font-weight:500;}
+.navbar-dark .navbar-nav .nav-link:hover,.navbar-dark .navbar-nav .nav-link.active{color:#fff !important;}
+.navbar-toggler{border-color:var(--border-2) !important;}
+
+/* ---- buttons (Bootstrap 5 CSS vars) ---- */
+.btn-primary{
+  --bs-btn-bg:var(--accent); --bs-btn-border-color:var(--accent);
+  --bs-btn-hover-bg:#3f8bec; --bs-btn-hover-border-color:#3f8bec;
+  --bs-btn-active-bg:#3f8bec; --bs-btn-active-border-color:#3f8bec;
+  --bs-btn-color:#04121f; --bs-btn-hover-color:#04121f; --bs-btn-active-color:#04121f;
+  color:#04121f !important;
+  font-family:var(--f-display);font-weight:600;border-radius:10px;
+}
+.btn-secondary,.btn-outline-secondary,.btn-outline-primary,.btn-light{
+  --bs-btn-bg:var(--surface-2); --bs-btn-border-color:var(--border); --bs-btn-color:var(--text);
+  --bs-btn-hover-bg:var(--surface-3); --bs-btn-hover-border-color:var(--border-2); --bs-btn-hover-color:#fff;
+  color:var(--text) !important;
+  border-radius:10px;
+}
+.btn-danger{--bs-btn-bg:var(--crit);--bs-btn-border-color:var(--crit);--bs-btn-color:#160406;border-radius:10px;}
+
+/* ---- forms + login/register card ---- */
+.form-control,.form-select,input,select,textarea{
+  background:var(--surface-2) !important;border:1px solid var(--border) !important;color:var(--text) !important;border-radius:10px !important;
+}
+.form-control:focus,input:focus,select:focus,textarea:focus{
+  border-color:var(--accent) !important;box-shadow:0 0 0 3px var(--accent-soft) !important;
+}
+::placeholder{color:var(--faint) !important;}
+.form-label,label{color:var(--muted) !important;}
+/* login/register column -> card */
+main .container .row .col-lg-6.offset-lg-3, main .container .row .col-md-8.offset-md-2{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:26px 24px;margin-top:28px;box-shadow:0 12px 34px rgba(0,0,0,.4);
+}
+
+/* ---- CARDS / MODALS ---- */
+.card,.modal-content,.list-group-item,.accordion-item{
+  background:var(--surface) !important;border:1px solid var(--border) !important;border-radius:14px !important;color:var(--text) !important;
+}
+.card-header,.card-footer,.modal-header,.modal-footer{border-color:var(--border) !important;background:transparent !important;}
+.modal-backdrop.show{background:#02040a;opacity:.72;}
+
+/* ---- CHALLENGE BOARD (real core-beta classes) ---- */
+.category-header{border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:16px !important;}
+.category-header h3{font-family:var(--f-display) !important;color:#fff !important;font-weight:700;position:relative;padding-left:14px;}
+.category-header h3::before{content:"";position:absolute;left:0;top:.15em;bottom:.15em;width:4px;border-radius:3px;background:linear-gradient(var(--accent),var(--cyan));}
+
+.challenge-button.btn-dark, button.challenge-button{
+  background:var(--surface) !important;border:1px solid var(--border) !important;color:var(--text) !important;
+  border-radius:14px !important;min-height:118px;padding:18px !important;
+  display:flex !important;flex-direction:column;justify-content:space-between;gap:8px;text-align:left !important;
+  font-family:var(--f-display);font-weight:600;box-shadow:none !important;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .2s ease !important;
+}
+.challenge-button.btn-dark:hover, button.challenge-button:hover{
+  transform:translateY(-3px);border-color:var(--border-2) !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.45) !important;
+}
+.challenge-button .challenge-value, .challenge-value{
+  font-family:var(--f-mono) !important;color:var(--muted) !important;font-weight:500;font-size:.95rem;
+}
+/* solved -> the one meaningful green accent */
+.challenge-button.challenge-solved{
+  border-color:color-mix(in srgb,var(--ok) 52%,var(--border)) !important;
+  box-shadow:inset 0 0 0 1px var(--ok-soft) !important;
+}
+.challenge-button.challenge-solved::after{
+  content:"\2713  solved";color:var(--ok);font-family:var(--f-body);font-weight:600;font-size:.72rem;letter-spacing:0;
+}
+
+/* ---- tables / scoreboard ---- */
+.table,table{--bs-table-bg:transparent;--bs-table-color:var(--text);color:var(--text) !important;}
+.table thead th,thead th{
+  color:var(--faint) !important;text-transform:uppercase;letter-spacing:0;font-size:.78rem;
+  border-bottom:1px solid var(--border) !important;background:transparent !important;
+}
+.table td,.table th{border-color:var(--border) !important;}
+.table-striped>tbody>tr:nth-of-type(odd)>*{--bs-table-accent-bg:rgba(255,255,255,.02);color:var(--text);}
+.table-hover>tbody>tr:hover>*{--bs-table-accent-bg:var(--accent-soft);color:var(--text);}
+
+/* progress / badges / alerts / pagination / dropdowns */
+.progress{background:var(--surface-3) !important;border-radius:6px;}
+.progress-bar{background:linear-gradient(90deg,var(--accent),var(--cyan)) !important;}
+.badge{background:var(--accent-soft) !important;color:var(--accent) !important;border:1px solid var(--border);font-weight:600;}
+.badge.bg-success,.bg-success{background:var(--ok-soft) !important;color:var(--ok) !important;}
+.alert{background:var(--surface-2) !important;border:1px solid var(--border) !important;color:var(--text) !important;border-radius:12px !important;}
+.page-link{background:var(--surface-2) !important;border-color:var(--border) !important;color:var(--accent) !important;}
+.page-item.active .page-link{background:var(--accent) !important;border-color:var(--accent) !important;color:#04121f !important;}
+.dropdown-menu{background:var(--surface) !important;border:1px solid var(--border) !important;border-radius:12px !important;box-shadow:0 12px 30px rgba(0,0,0,.5) !important;}
+.dropdown-item{color:var(--text) !important;}
+.dropdown-item:hover,.dropdown-item:focus{background:var(--accent-soft) !important;color:#fff !important;}
+
+/* footer + a11y */
+footer.footer,.footer{background:transparent !important;border-top:1px solid var(--border);color:var(--muted) !important;}
+:focus-visible{outline:2px solid var(--accent) !important;outline-offset:2px;}
+*::-webkit-scrollbar{width:10px;height:10px;}
+*::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:10px;}
+*::-webkit-scrollbar-track{background:var(--surface);}
+
+@media (max-width:576px){ .navbar-brand{font-size:1rem !important;} .challenge-button.btn-dark{min-height:100px;} }
+
+/* ---- shared CTFd layout: keep every route on the same visual system ---- */
+html{min-width:320px;scroll-behavior:smooth;}
+body{min-width:320px;overflow-x:hidden;}
+.navbar{min-height:64px;padding-block:8px;}
+.navbar .container,.navbar .container-fluid{gap:12px;}
+.navbar-brand{max-width:100%;white-space:normal;overflow-wrap:anywhere;}
+.navbar-nav .nav-link{padding-inline:10px;}
+.dropdown-menu,.modal-content,.card,.list-group-item,.accordion-item{box-shadow:0 10px 30px rgba(0,0,0,.2);}
+.card,.modal-content,.list-group-item,.accordion-item{border-radius:8px !important;}
+.card-body,.modal-body{min-width:0;overflow-wrap:anywhere;}
+.modal-dialog{width:min(720px,calc(100% - 24px));max-width:720px;margin:24px auto;}
+.modal-content{max-height:calc(100dvh - 48px);overflow:auto;}
+.modal-header,.modal-footer{gap:12px;flex-wrap:wrap;}
+.challenge-desc,.challenge-desc *{max-width:100%;overflow-wrap:anywhere;}
+.challenge-desc img,.modal-body img{height:auto;max-width:100%;}
+.form-control,.form-select,input,select,textarea{min-width:0;max-width:100%;}
+textarea{resize:vertical;}
+pre{max-width:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;}
+.table-responsive{border:1px solid var(--border);border-radius:8px;}
+.table-responsive .table{margin-bottom:0;}
+.challenges-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;margin-inline:0;}
+.challenges-row>[class*="col-"]{width:auto;max-width:none;padding:0;}
+.challenge-button.btn-dark,button.challenge-button{width:100%;min-width:0;min-height:118px;border-radius:8px !important;}
+.challenge-button span{overflow-wrap:anywhere;}
+.category-header{margin-top:28px;}
+.category-header:first-child{margin-top:0;}
+.btn,.page-link{max-width:100%;white-space:normal;}
+.form-group,.mb-3{min-width:0;}
+
+/* ---- branded index page ---- */
+.obm-home{width:min(100%,920px);margin-inline:auto;padding:12px 0 30px;}
+.obm-hero{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0;text-align:center;}
+.obm-mark{width:64px;height:64px;flex:none;}
+.obm-eyebrow{color:var(--faint);font-family:var(--f-mono);font-size:.75rem;text-transform:uppercase;}
+.obm-title{margin:0;font-size:2.25rem;overflow-wrap:anywhere;}
+.obm-intro{max-width:620px;margin:0;color:var(--muted);font-size:1rem;line-height:1.65;}
+.obm-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px;}
+.obm-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px;margin-top:18px;}
+.obm-stage{min-width:0;padding:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+.obm-stage-code{color:var(--faint);font-family:var(--f-mono);font-size:.75rem;}
+.obm-stage-name{margin-top:5px;color:var(--text);font-weight:600;overflow-wrap:anywhere;}
+.obm-stage-domain{margin-top:3px;color:var(--muted);font-size:.78rem;}
+.obm-safety{margin:22px 0 0;color:var(--faint);font-size:.78rem;text-align:center;}
+
+@media (max-width:767.98px){
+  .navbar{align-items:flex-start;}
+  .navbar .container,.navbar .container-fluid{align-items:center;flex-wrap:wrap;}
+  .navbar-collapse{flex-basis:100%;}
+  .navbar-nav{gap:2px;}
+  .navbar-nav .nav-link{padding:8px 4px;}
+  .container,.container-fluid{padding-inline:16px;}
+  .modal-dialog{margin:12px auto;}
+  .modal-content{max-height:calc(100dvh - 24px);}
+  .obm-home{padding-top:4px;}
+  .obm-hero{padding-block:18px;}
+  .obm-title{font-size:1.9rem;}
+}
+@media (max-width:420px){
+  .navbar-brand{font-size:.95rem !important;}
+  .navbar-brand::before{width:18px;height:18px;margin-right:7px;}
+  .challenges-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:8px;}
+  .challenge-button.btn-dark,button.challenge-button{padding:12px !important;min-height:104px;}
+  .obm-actions{width:100%;}
+  .obm-actions .btn{flex:1 1 140px;}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+}
