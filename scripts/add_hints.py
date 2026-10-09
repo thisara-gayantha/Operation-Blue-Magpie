@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-add_hints.py — adds per-challenge HINTS to CTFd so the "Hint" button appears for
-players. Put at: scripts/add_hints.py  (reads platform/ctfd/hints.json)
+add_hints.py — reconciles per-challenge hints in CTFd without creating duplicates.
+It reads platform/ctfd/hints.json and removes duplicate copies of configured hints.
 
-Run after the challenges are seeded, with an admin API token
-(CTFd -> Admin -> Settings -> Access Tokens):
+Run after the challenges are seeded, with an admin API token generated from the
+signed-in admin account's user menu -> Settings -> Access Tokens:
     CTFD_URL=https://localhost CTFD_TOKEN=<token> python scripts/add_hints.py
 
 Stdlib only. Hints are matched to challenges by their leading "S1".."S6" token.
@@ -37,16 +37,42 @@ def api(method: str, path: str, body=None):
 
 def main() -> None:
     hints = json.loads((REPO / "platform" / "ctfd" / "hints.json").read_text())
-    chals = api("GET", "/api/v1/challenges").get("data", [])
+    chals = api("GET", "/api/v1/challenges?view=admin").get("data", [])
     added = 0
+    removed = 0
     for c in chals:
-        key = c["name"].split()[0]           # "S1" from "S1 · The Phishing Lure"
-        for h in hints.get(key, []):
-            api("POST", "/api/v1/hints",
-                {"challenge_id": c["id"], "content": h["content"], "cost": h["cost"]})
+        key = c["name"].split()[0]
+        expected = hints.get(key, [])
+        if not expected:
+            continue
+
+        existing = api("GET", f"/api/v1/challenges/{c['id']}/hints").get("data", [])
+        for hint in expected:
+            matches = [
+                item for item in existing
+                if item.get("content") == hint["content"]
+                and item.get("cost") == hint["cost"]
+            ]
+            if matches:
+                for duplicate in matches[1:]:
+                    api("DELETE", f"/api/v1/hints/{duplicate['id']}")
+                    removed += 1
+                existing = [
+                    item for item in existing
+                    if item.get("id") not in {duplicate["id"] for duplicate in matches[1:]}
+                ]
+                print(f"  [{key}] hint present once (cost {hint['cost']})")
+                continue
+
+            api("POST", "/api/v1/hints", {
+                "challenge_id": c["id"],
+                "content": hint["content"],
+                "cost": hint["cost"],
+            })
             added += 1
-            print(f"  [{key}] hint added (cost {h['cost']})")
-    print(f"\nDone — {added} hints added. The Hint button now shows on those challenges.")
+            print(f"  [{key}] hint added (cost {hint['cost']})")
+
+    print(f"\nDone — {added} added, {removed} duplicate(s) removed.")
 
 
 if __name__ == "__main__":
