@@ -28,8 +28,9 @@ docker compose ps        # wait until services are healthy
 This is what fixes "artefacts / network diagram missing" — it uploads each
 challenge's file automatically.
 
-1. Create an admin API token: **Admin → Settings → Access Tokens → Generate** →
-   copy it.
+1. Sign in as the admin, open the **user menu → Settings → Access Tokens**,
+   then select **Generate** and copy the token. This is in the signed-in
+   account's settings, not the separate Admin configuration panel.
 2. In PowerShell (replace `PASTE_TOKEN`; no host Python needed — it runs in a
    throwaway container):
 ```powershell
@@ -38,10 +39,33 @@ docker run --rm --network obm_frontend_net -v "${PWD}:/work" -w /work `
   python:3.12-slim sh -c "pip install -q requests && python scripts/seed_ctfd.py"
 ```
 You should see all six challenges created or updated, flags set, files attached,
-and all stages visible to participants. Solve hand-offs remain in each
-description, but the board does not hide later stages. The script checks every
-required attachment before changing CTFd and can be safely re-run to repair
-visibility, challenge metadata, and files.
+and the S1-to-S6 prerequisite chain applied. Players can see the names of all
+stages, but later stages are locked until the previous stage is solved. Clicking
+a locked stage explains which stage must be completed first; its details and
+files remain inaccessible. If duplicate stage records exist, the seeder keeps
+the record with submission history, transfers its configured hints from the
+duplicate, and deletes the duplicate so no `???` placeholder cards remain. The
+seeder checks every required attachment before changing CTFd and can be safely
+re-run.
+
+To only remove duplicate stage cards on an already-seeded instance, use the
+same command with `--cleanup-duplicates` instead. It preserves submission
+history and repairs the stage prerequisite settings without reseeding files,
+awards, or the theme.
+
+To attach the per-stage hints after the challenges exist, run the existing
+`scripts/add_hints.py` script with an admin API token. It is safe to rerun: it
+adds missing hints and removes duplicates without changing the configured hints.
+```powershell
+docker run --rm --network obm_frontend_net -v "${PWD}:/work" -w /work `
+  -e CTFD_URL=http://ctfd:8000 -e CTFD_TOKEN=PASTE_TOKEN `
+  python:3.12-slim sh -c "python scripts/add_hints.py"
+```
+
+Each player starts with 30 points to spend on hints. Rebuild CTFd with
+`docker compose up -d --build ctfd` after changing the plugin or Dockerfile.
+The seeder gives existing non-admin players the same one-time 30-point award;
+the plugin automatically grants it to newly registered players.
 
 > If teammates play from **other PCs**, use your machine's LAN IP instead of
 > `localhost` for `CTFD_TARGET_HOST` (that value only fills the S4/S6 connection
