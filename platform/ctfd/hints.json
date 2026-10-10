@@ -1,0 +1,26 @@
+{
+  "S1": [
+    {"content": "Phishing emails hide more than the visible body — look for an encoded block in the message.", "cost": 10},
+    {"content": "That block is base64; one command turns it back into readable text.", "cost": 20}
+  ],
+  "S2": [
+    {"content": "Start with the metadata (exiftool) — who is the author? Then look *inside* the pixels.", "cost": 10},
+    {"content": "steghide can't open PNGs. Use a tool that can (OpenStego).", "cost": 20}
+  ],
+  "S3": [
+    {"content": "Open capture.pcap in Wireshark and 'Follow the HTTP Stream'.", "cost": 10},
+    {"content": "The credential is in the POST body; the flag is in a response header.", "cost": 20}
+  ],
+  "S4": [
+    {"content": "The login echoes its SQL query — the username field isn't sanitised.", "cost": 15},
+    {"content": "UNION SELECT with three columns, and comment out the password check with -- .", "cost": 25}
+  ],
+  "S5": [
+    {"content": "Unsalted MD5 — one account cracks from the wordlist, another from a short mask.", "cost": 15},
+    {"content": "The vault hash is 6 lowercase-hex chars: hashcat mask ?h?h?h?h?h?h.", "cost": 25}
+  ],
+  "S6": [
+    {"content": "Log in with the S5 credential, then look for SUID binaries: find / -perm -4000 2>/dev/null.", "cost": 15},
+    {"content": "Check GTFOBins for the SUID binary you found.", "cost": 25}
+  ]
+}
