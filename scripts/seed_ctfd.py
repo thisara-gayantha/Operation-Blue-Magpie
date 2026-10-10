@@ -85,6 +85,14 @@ CH = [
                f"read `/root/flag.txt`.\n\nFlag format: `CPAY{{...}}`")),
 ]
 
+def normalize_stage_name(name: str) -> str:
+    return " ".join(name.replace("·", " ").replace("-", " ").split()).casefold()
+
+
+STAGES_BY_NORMALIZED_NAME = {
+    normalize_stage_name(challenge["name"]): challenge for challenge in CH
+}
+
 
 def flags() -> dict:
     p = REPO / "challenges" / ".flags.json"
@@ -125,43 +133,44 @@ def remove_duplicate_stage_challenges() -> None:
         params={"view": "admin"},
     )
     r.raise_for_status()
-    by_name: dict[str, list[dict]] = {}
-    stage_names = {challenge["name"] for challenge in CH}
+    by_key: dict[str, list[dict]] = {}
+    stages_by_key = {challenge["key"]: challenge for challenge in CH}
     for challenge in r.json().get("data", []):
-        if challenge.get("name") in stage_names:
-            by_name.setdefault(challenge["name"], []).append(challenge)
+        stage = STAGES_BY_NORMALIZED_NAME.get(
+            normalize_stage_name(challenge.get("name", ""))
+        )
+        if stage:
+            by_key.setdefault(stage["key"], []).append(challenge)
 
     duplicate_groups = {
-        name: sorted(challenges, key=lambda challenge: challenge["id"])
-        for name, challenges in by_name.items()
+        key: sorted(challenges, key=lambda challenge: challenge["id"])
+        for key, challenges in by_key.items()
         if len(challenges) > 1
     }
-    if not duplicate_groups:
-        print("  [cleanup] no duplicate stage challenges found")
-        return
 
     submissions: dict[int, int] = {}
-    page = 1
-    while True:
-        r = S.get(
-            f"{URL}/api/v1/submissions",
-            headers=H,
-            verify=VERIFY,
-            params={"view": "admin", "page": page},
-        )
-        r.raise_for_status()
-        data = r.json()
-        for submission in data.get("data", []):
-            challenge_id = submission.get("challenge_id")
-            if isinstance(challenge_id, int):
-                submissions[challenge_id] = submissions.get(challenge_id, 0) + 1
-        pagination = data.get("meta", {}).get("pagination", {})
-        if page >= pagination.get("pages", 1):
-            break
-        page += 1
+    if duplicate_groups:
+        page = 1
+        while True:
+            r = S.get(
+                f"{URL}/api/v1/submissions",
+                headers=H,
+                verify=VERIFY,
+                params={"view": "admin", "page": page},
+            )
+            r.raise_for_status()
+            data = r.json()
+            for submission in data.get("data", []):
+                challenge_id = submission.get("challenge_id")
+                if isinstance(challenge_id, int):
+                    submissions[challenge_id] = submissions.get(challenge_id, 0) + 1
+            pagination = data.get("meta", {}).get("pagination", {})
+            if page >= pagination.get("pages", 1):
+                break
+            page += 1
 
     winners: dict[str, dict] = {}
-    for name, challenges in duplicate_groups.items():
+    for key, challenges in duplicate_groups.items():
         with_submissions = [
             challenge
             for challenge in challenges
@@ -173,67 +182,82 @@ def remove_duplicate_stage_challenges() -> None:
                 for challenge in with_submissions
             )
             raise RuntimeError(
-                f"Duplicate {name} challenges have submission history on multiple "
+                f"Duplicate {key} challenges have submission history on multiple "
                 f"records ({details}); refusing to delete either."
             )
-        winners[name] = with_submissions[0] if with_submissions else challenges[0]
+        winners[key] = with_submissions[0] if with_submissions else challenges[0]
 
-    for name, challenges in duplicate_groups.items():
-        winner = winners[name]
+    for key, challenges in by_key.items():
+        winner = winners.get(key, challenges[0])
         winner_id = winner["id"]
-        r = S.get(
-            f"{URL}/api/v1/challenges/{winner_id}/hints",
-            headers=H,
-            verify=VERIFY,
-        )
-        r.raise_for_status()
-        known_hints = {
-            (hint.get("content"), hint.get("cost"))
-            for hint in r.json().get("data", [])
-        }
-
-        for duplicate in challenges:
-            duplicate_id = duplicate["id"]
-            if duplicate_id == winner_id:
-                continue
-
+        if key in duplicate_groups:
             r = S.get(
-                f"{URL}/api/v1/challenges/{duplicate_id}/hints",
+                f"{URL}/api/v1/challenges/{winner_id}/hints",
                 headers=H,
                 verify=VERIFY,
             )
             r.raise_for_status()
-            for hint in r.json().get("data", []):
-                key = (hint.get("content"), hint.get("cost"))
-                if key in known_hints:
+            known_hints = {
+                (hint.get("content"), hint.get("cost"))
+                for hint in r.json().get("data", [])
+            }
+
+            for duplicate in challenges:
+                duplicate_id = duplicate["id"]
+                if duplicate_id == winner_id:
                     continue
-                r = S.post(
-                    f"{URL}/api/v1/hints",
+
+                r = S.get(
+                    f"{URL}/api/v1/challenges/{duplicate_id}/hints",
                     headers=H,
                     verify=VERIFY,
-                    json={
-                        "challenge_id": winner_id,
-                        "content": hint["content"],
-                        "cost": hint["cost"],
-                    },
                 )
                 r.raise_for_status()
-                known_hints.add(key)
+                for hint in r.json().get("data", []):
+                    hint_key = (hint.get("content"), hint.get("cost"))
+                    if hint_key in known_hints:
+                        continue
+                    r = S.post(
+                        f"{URL}/api/v1/hints",
+                        headers=H,
+                        verify=VERIFY,
+                        json={
+                            "challenge_id": winner_id,
+                            "content": hint["content"],
+                            "cost": hint["cost"],
+                        },
+                    )
+                    r.raise_for_status()
+                    known_hints.add(hint_key)
 
-            r = S.delete(
-                f"{URL}/api/v1/challenges/{duplicate_id}",
+                r = S.delete(
+                    f"{URL}/api/v1/challenges/{duplicate_id}",
+                    headers=H,
+                    verify=VERIFY,
+                )
+                r.raise_for_status()
+                print(f"  [cleanup] removed duplicate {key} (id={duplicate_id})")
+
+        canonical_name = stages_by_key[key]["name"]
+        if winner.get("name") != canonical_name:
+            r = S.patch(
+                f"{URL}/api/v1/challenges/{winner_id}",
                 headers=H,
                 verify=VERIFY,
+                json={"name": canonical_name},
             )
             r.raise_for_status()
-            print(f"  [cleanup] removed duplicate {name} (id={duplicate_id})")
+            print(f"  [cleanup] normalized {key} title on id={winner_id}")
 
         if submissions.get(winner_id):
             print(
-                f"  [cleanup] kept {name} (id={winner_id}) to preserve "
+                f"  [cleanup] kept {key} (id={winner_id}) to preserve "
                 f"{submissions[winner_id]} submission(s)"
             )
-    print(f"  [cleanup] duplicate stage entries consolidated")
+    if duplicate_groups:
+        print("  [cleanup] duplicate stage entries consolidated")
+    else:
+        print("  [cleanup] no duplicate stage challenges found")
 
 
 def add_flag(cid: int, content: str) -> None:
@@ -367,9 +391,10 @@ def set_stage_prerequisites() -> None:
     stage_ids: dict[str, int] = {}
     for challenge in r.json().get("data", []):
         name = challenge.get("name", "")
-        key = name.split(maxsplit=1)[0] if name else ""
-        if key not in stage_keys:
+        stage = STAGES_BY_NORMALIZED_NAME.get(normalize_stage_name(name))
+        if not stage:
             continue
+        key = stage["key"]
         if key in stage_ids:
             raise RuntimeError(
                 f"Multiple challenges found for {key}; refusing to set prerequisites."

@@ -31,6 +31,9 @@ challenge's file automatically.
 1. Sign in as the admin, open the **user menu → Settings → Access Tokens**,
    then select **Generate** and copy the token. This is in the signed-in
    account's settings, not the separate Admin configuration panel.
+   When testing a token with a manual GET request, include
+   `Content-Type: application/json`; CTFd otherwise ignores the authorization
+   header and redirects to the login page.
 2. In PowerShell (replace `PASTE_TOKEN`; no host Python needed — it runs in a
    throwaway container):
 ```powershell
@@ -42,11 +45,11 @@ You should see all six challenges created or updated, flags set, files attached,
 and the S1-to-S6 prerequisite chain applied. Players can see the names of all
 stages, but later stages are locked until the previous stage is solved. Clicking
 a locked stage explains which stage must be completed first; its details and
-files remain inaccessible. If duplicate stage records exist, the seeder keeps
-the record with submission history, transfers its configured hints from the
-duplicate, and deletes the duplicate so no `???` placeholder cards remain. The
-seeder checks every required attachment before changing CTFd and can be safely
-re-run.
+files remain inaccessible. If duplicate stage records exist, including legacy
+dash-separated title variants, the seeder keeps the record with submission
+history, transfers its configured hints from the duplicate, and deletes the
+duplicate so no `???` placeholder cards remain. The seeder checks every
+required attachment before changing CTFd and can be safely re-run.
 
 To only remove duplicate stage cards on an already-seeded instance, use the
 same command with `--cleanup-duplicates` instead. It preserves submission
